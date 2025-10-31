@@ -1,0 +1,522 @@
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <style>
+        html,body {
+            width: 100%;
+            height: 100%;
+            padding: 0px;
+            margin: 0px;
+            --background: #111;
+            background-color: var(--background);
+            color: white;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        button, span {
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        #lyrics {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            /* background-color: aquamarine; */
+            justify-content: center;
+            flex-grow: 1;
+            overflow: hidden;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            height: 100%;
+        }
+
+        .line {
+            /* background-color: rgb(4, 238, 160); */
+            font-size: 30px;
+            font-weight: 900;
+            padding: 0px;
+            overflow: hidden;
+            word-wrap: break-word;
+            white-space: pre;
+            display: flex;
+            flex-wrap: wrap;
+            align-content: center;
+            z-index: 0;
+        }
+
+        .line>span span {
+            display: inline-block; 
+            /* background-color: var(--background); */
+            color: #fff8;
+            /* background-color: #0000 */
+        }
+
+        .padding {
+            padding: 30px;
+            word-wrap: break-word;
+            white-space: pre;
+            display: flex;
+            flex-wrap: wrap;
+            overflow: hidden;
+
+        }
+
+        .line:not(.leave):not(.skip-anim) {
+            animation: enter .5s ease-out forwards;
+        }
+
+        .line.leave:not(.skip-anim) {
+            animation: leave .5s ease-out forwards
+        }
+
+        @keyframes enter {
+            0%   { max-height: 0%; opacity: 0; transform: translateY(200px); }
+            100% { max-height: 50%; opacity: 1; transform: translateY(0px); }
+        }
+
+        @keyframes leave {
+            0%   { max-height: 50%; opacity: 1; transform: translateY(0px); }
+            100% { max-height: 0%; opacity: 0; transform: translateY(-200px); }
+        }
+
+        @keyframes jump {
+            0%   { transform: translateY(0); }
+            50%  { transform: translateY(var(--jump-height)); }
+            100% { transform: translateY(0); }
+        }
+
+        .jump:not(.skip-anim) {
+            /* text-decoration: underline; */
+            --jump-height: -50%;
+            animation: jump 0.45s ease-in-out forwards;
+            color: #fff !important;
+            text-shadow: 0px 0px 12px #fff7;
+        }
+
+
+        .info * {
+            margin: 0px;
+            /* text-align: center; */
+        }
+
+        .info {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+        }
+
+        .info img {
+            height: 75px;
+            object-fit: cover;
+            margin: 0 1rem;
+        }
+
+        #album-title {
+            color: #fff7;
+        }
+
+        #artist {
+            color: #fffa;
+        }
+
+        #timeline {
+            margin: 10px;
+            height: 20px;
+            --progress: 30%;
+            background: linear-gradient(90deg, #fffa var(--progress),#fff4 0%);
+            border-radius: 10px;
+        }
+
+        .controls, #lyrics {
+            gap: 0;
+            display: flex;
+            user-select: none;
+        }
+
+        .controls * {
+            font-size: 20px;
+        }
+
+        .controls button {
+            margin: 0px;
+            padding: 0px;
+            margin-left: 12px;
+            gap: 0px;
+            border: 0;
+            background: none;
+            font-weight: 900;
+            width: 100px;
+            text-align: left;
+            color: white
+        }
+
+        .controls>span {
+            font-weight: 900;
+            flex-grow: 1;
+            text-align: right;
+            margin-right: 12px;
+        }
+
+        .hidden {
+            display: none
+        }
+
+        #popup-container:not(.hidden) {
+            width: 100%;
+            height: 100%;
+            position: fixed;
+            display: flex;
+            inset: 0;
+            justify-content: center;
+            justify-items: center;
+            align-items: center;
+            background-color: #000a;
+        }
+
+        .popup {
+            background-color: var(--background);
+            padding: 20px;
+            border: #fff solid 2px;
+            border-radius: 10px;
+            width: 400px;
+        }
+
+        .popup h2 {
+            width: calc(100% - 50px);
+        }
+
+        .what {
+            width: 100%;
+            color: #fff5;
+            text-align: right;
+        }
+
+        .what>* {
+            margin-right: 12px;
+            user-select: none;
+            cursor: pointer;
+        }
+
+        button {
+            cursor: pointer;
+        }
+
+        .un-what {
+            background-color: #a33;
+            border: none;
+            border-radius: 10px;
+            height: 20px;
+            width: 20px;
+            padding: 0px;
+            margin: 0px;
+            margin-top: 5px; 
+            overflow: hidden;
+            user-select: none;
+            cursor: pointer;
+        }
+
+
+        a:link {
+            color: #77f;
+            text-decoration: none;
+        }
+        a:visited {
+            color: #77f;
+            text-decoration: none;
+        }
+        a:hover {
+            color: #7ff;
+            text-decoration: underline;
+        }
+        a:active {
+            color: #fff;
+            text-decoration: underline;
+        }
+
+        a[target="_blank"]::after {
+            content: " ↗"
+        }
+
+        
+    </style>
+
+
+    <title>Lyrics Demo 2</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+</head>
+    
+
+<body>
+
+    <div class="container">
+        <div class="info">
+            <div>
+                <img id="album-cover" src=""/>
+            </div>
+            <div>
+                <h1 id="song-title"></h1>
+                <h3 id="album-title"></h3>
+                <h2 id="artist"></h2>
+            </div>
+        </div>
+        <div id="lyrics">
+            <!-- <span class="line">line</span> -->
+        </div>
+        <span class="what"><code onclick="open_popup()">(?)</code></span>
+        <div class="controls">     
+            <button onclick="toggle_pause()" id="play-btn">loading...</button>
+            <span id="time">3:00</span>
+        </div>
+        <div id="timeline" onmousedown="timeline_down(event)"></div>
+
+    </div>
+
+    <div id="popup-container" class="hidden">
+        <div class="popup">
+            <span style="height: 0px;width:100%;display:flex;flex-direction: row-reverse;"><button class="un-what" onclick="close_popup()">×</button></span>
+            <h2 style="margin-top:0px">Expressive Lyrics Format Demo 2</h2>
+            <p>This is just an experiment meant to test how easy it is to create syllable-synced lyrics that'd be more expressive than on other platforms.</p>
+            <p>I've always been frustrated over how poorly synced lyrics are on Apple Music, how clunky they are, or even the fact that you cant add your own synced lyrics.</p>
+            <p>And from what i saw, other platforms aren't doing so much better <br><a href="https://www.youtube.com/watch?v=ZeKKTos-FQk" target="_blank">(<img src="https://www.youtube.com/favicon.ico"  style="height:16px;margin-bottom:-3px"/> example)</a></p>
+            <p>What's even more confusing for me is that word-synced and even line-synced lyrics are harder to tap out! With syllable-synced lyrics you just tap into the rhythm/melody, without processing what is being said.</p>
+            <p>This site will have more and more features as the time goes on. I have a lot of plans for this :3</p>
+            <p>But note that this site most likely won't update often, umm.. just be patient <i>:</i>p</p>
+            <a href="https://luctisity.ucrash.fun/projects/17" target="_blank" style="font-size: 10px;"><img src="https://luctisity.ucrash.fun/favicon.ico" style="height:12px;margin-bottom:-2px"/> Demo 1</a>
+            <br><p>Thank you for visiting ^w^</p>
+            <span style="width:100%;text-align: right;display:inline-block">made by Tenony</span>
+            <br>
+        </div>
+        <script>
+            function open_popup() {
+                document.getElementById("popup-container").classList.remove("hidden")
+            }
+            function close_popup() {
+                document.getElementById("popup-container").classList.add("hidden")
+            }
+        </script>
+    </div>
+    <!-- <script src="https://cdn.jsdelivr.net/npm/tone@next/build/Tone.js"></script> -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.2.3/howler.min.js"></script>
+
+    <script src="elf.js"></script>
+    <script>
+        let sound
+        let current_run = 0
+        let paused_at = 63.5
+        let was_playing = false
+        let processed
+        const e = Elf.EventsEnum
+
+        async function load() {
+            let text = ""
+            await fetch("lyrics.txt").then(response => response.text()).then(t=>text=t)
+            const sections = Elf.parse(text)
+            console.log(sections)
+            processed = Elf.process(sections)
+            console.log(processed)
+
+            sound = new Howl({
+                src: ["song.mp3"],
+                volume: 0.5
+            });
+            move_progress_bar(0)
+            sound.once("load",()=>{
+                document.getElementById("play-btn").innerText = "play"
+                run(true)
+            })
+            sound.on("end",()=>{
+                pause()
+                paused_at = 0
+            })
+
+            processed.events = Elf.sort_events(processed.events.map(v=>{
+                if (v[1]==e.SHOW_LINE) v[0] -= .25;
+                return v
+            }))
+
+
+            return processed
+        }
+        load()
+        console.log(processed)
+
+
+        
+        async function run(only_load) {
+            let first = true
+
+            sound.stop()
+
+            current_run++
+            const this_run = current_run+0
+
+            const lyrics_div = document.getElementById("lyrics")
+            lyrics_div.innerHTML = ""
+
+            let step = 0
+            
+            const skip_to = paused_at
+            const start = performance.now()-skip_to*1000
+            sound.seek(skip_to)
+
+            if (!only_load)
+                sound.play()
+
+            const metadata = processed.sections.METADATA
+
+            document.getElementById("song-title").innerText = metadata.song_name
+            document.getElementById("artist").innerText = metadata.artist
+            document.getElementById("album-title").innerText = metadata.album
+            document.getElementById("album-cover").src = metadata.album_cover
+
+            function update() {
+                if (current_run!=this_run) return;
+
+                const timer = (performance.now() - start) / 1000 +metadata.general_offset
+
+                move_progress_bar(sound.seek()/sound._duration)
+                
+
+                while (processed.events[step] && processed.events[step][0]<=timer) {
+                    const [start,type,data] = processed.events[step]
+                    // console.log(type,start,timer,data)
+                    switch (type) {
+                        case e.SHOW_LINE:
+                            add(processed.sections["MAIN"+data.channel][data.line])
+                            break;
+                        case e.HIDE_LINE:
+                            remove(processed.sections["MAIN"+data.channel][data.line])
+                            break;
+                        case e.SAY:
+                            highlight(processed.sections["MAIN"+data.channel][data.line].pieces[data.piece])
+                            break;
+                    
+                        default: break;
+                    }
+                    step++
+                }
+
+                first = false
+
+                if (!only_load)
+                    requestAnimationFrame(update);
+            }
+
+
+
+            function add(line) {
+                const shell = document.createElement("span")
+                const line_el = document.createElement("span")
+                shell.classList.add("line")
+                if (first) shell.classList.add("skip-anim")
+                shell.setAttribute("unique",line.unique)
+
+                let word_span
+
+                let new_word_span = () => {
+                    if (word_span) line_el.append(word_span)
+                    word_span = document.createElement("span")
+                    word_span.classList.add("word")
+                }
+
+                new_word_span()
+
+                
+                line.pieces.forEach(piece => {
+                    const span = document.createElement("span")
+                    span.innerText = piece.T
+                    span.setAttribute("unique",piece.unique)
+                    
+                    if (piece.T.slice(0,1)==" ") new_word_span()
+                    word_span.append(span)
+                    if (piece.T.slice(-1)==" ") new_word_span()
+                });
+        
+                new_word_span()
+                line_el.classList.add("padding")
+                shell.append(line_el)
+                lyrics_div.append(shell)
+            }
+
+            function remove(line) {
+                const el = document.querySelector(`[unique="${line.unique}"]`)
+                el.classList.add("leave")
+                if (first) {el.remove();return}
+                el.classList.remove("skip-anim")
+                setTimeout(()=>el.remove(),1000)
+            }
+
+            function highlight(piece) {
+                const el = document.querySelector(`[unique="${piece.unique}"]`)
+                if (first) el.style.setProperty("--jump-height","0px")
+                el.classList.add("jump")
+            }
+            
+            update()
+        }
+
+
+        function pause() {
+            current_run++
+            sound.pause()
+            paused_at = sound.seek()
+            document.getElementById("play-btn").innerText = "play"
+        }
+
+        function toggle_pause() {
+            if (sound.state()=="loaded")
+                if (paused_at!==null) {
+                    run()
+                    paused_at = null
+                    document.getElementById("play-btn").innerText = "pause"
+                } else pause()
+        }
+
+        function pretty_seconds(s) {
+            return `${(Math.floor(s/60)+"").padStart(2, "0")}:${(Math.floor(s%60)+"").padStart(2, "0")}`
+        }
+
+        function move_progress_bar(p) {
+            p = p??(paused_at?paused_at/sound._duration:sound.seek()/sound._duration)
+            document.getElementById("timeline").style.setProperty("--progress",(p*100) +"%")
+            if (sound.state()=="loaded") {
+                let s = p*sound._duration
+                document.getElementById("time").innerText = `${pretty_seconds(s)} / ${pretty_seconds(sound._duration)}`
+                return p*sound._duration
+            } else document.getElementById("time").innerText = "";
+        }
+
+        let is_dragging = false
+
+        const timeline_el = document.getElementById("timeline")
+
+        function timeline_drag(event) {
+            const rect = timeline_el.getBoundingClientRect()
+            p = Math.min(1,Math.max(0,(event.clientX-rect.left)/rect.width))
+            
+            return move_progress_bar(p)
+        }
+
+        function timeline_down(event) {
+            is_dragging = true
+            was_playing = !paused_at
+            pause()
+            timeline_drag(event)
+            document.addEventListener("mousemove", timeline_drag);
+        }
+        document.addEventListener("mouseup", (event)=>{
+            if (is_dragging) document.removeEventListener("mousemove", timeline_drag);
+            else return;
+            is_dragging = false
+            paused_at = timeline_drag(event)
+            console.log(was_playing,paused_at)
+            if (was_playing) toggle_pause()
+            else run(true)
+        });
+    </script>
+</body>
